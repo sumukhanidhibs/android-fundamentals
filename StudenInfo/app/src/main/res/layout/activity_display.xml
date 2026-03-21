@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:padding="20dp"
+    android:gravity="center"
+    android:background="#E8EAF6">
+
+    <!-- Screen Title -->
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Student Information"
+        android:textSize="24sp"
+        android:textStyle="bold"
+        android:textColor="#1A237E"
+        android:gravity="center"
+        android:layout_marginBottom="32dp"/>
+
+    <!-- Student Name — Populated from Application Context -->
+    <TextView
+        android:id="@+id/tvName"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Name: "
+        android:textSize="18sp"
+        android:textColor="#212121"
+        android:layout_marginBottom="12dp"
+        android:padding="12dp"
+        android:background="#FFFFFF"/>
+
+    <!-- Student Email -->
+    <TextView
+        android:id="@+id/tvEmail"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Email: "
+        android:textSize="18sp"
+        android:textColor="#212121"
+        android:layout_marginBottom="12dp"
+        android:padding="12dp"
+        android:background="#FFFFFF"/>
+
+    <!-- Student Course -->
+    <TextView
+        android:id="@+id/tvCourse"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Course: "
+        android:textSize="18sp"
+        android:textColor="#212121"
+        android:layout_marginBottom="24dp"
+        android:padding="12dp"
+        android:background="#FFFFFF"/>
+
+    <!-- Context Information — Shows class names of contexts used -->
+    <TextView
+        android:id="@+id/tvContextInfo"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Context Info:"
+        android:textSize="13sp"
+        android:textColor="#757575"
+        android:padding="12dp"
+        android:background="#F3E5F5"
+        android:fontFamily="monospace"/>
+
+</LinearLayout>

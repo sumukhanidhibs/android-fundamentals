@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="com.example.studeninfo">
+
+    <!--
+        android:name=".MyApplication"
+        This tells Android to use MyApplication as the Application class.
+        WITHOUT this, Android creates a default Application instance
+        and your global variables won't work.
+        This is MANDATORY for Application Context to point to MyApplication.
+    -->
+    <application
+        android:name=".MyApplication"
+        android:allowBackup="true"
+        android:icon="@mipmap/ic_launcher"
+        android:label="Student Info App"
+        android:roundIcon="@mipmap/ic_launcher_round"
+        android:supportsRtl="true"
+        android:theme="@style/Theme.StudenInfo">
+
+        <!-- Main Activity — Entry point of the app -->
+        <activity
+            android:name=".MainActivity"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+
+        <!-- Display Activity — Must be declared to be navigable -->
+        <activity
+            android:name=".DisplayActivity"
+            android:exported="false"
+            android:label="Student Details"/>
+
+        <!--
+            Service Declaration
+            android:exported="false" → This service cannot be started by other apps.
+            This is a security best practice.
+        -->
+        <service
+            android:name=".StudentService"
+            android:exported="false"/>
+
+        <!--
+            BroadcastReceiver Declaration
+            android:exported="false" → Only this app can send broadcasts to this receiver.
+            The intent-filter action matches what we send in MainActivity.
+        -->
+        <receiver
+            android:name=".StudentReceiver"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="com.example.studentinfo.STUDENT_ACTION"/>
+            </intent-filter>
+        </receiver>
+
+    </application>
+
+</manifest>

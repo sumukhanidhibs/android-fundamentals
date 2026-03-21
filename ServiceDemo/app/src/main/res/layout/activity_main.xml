@@ -1,0 +1,113 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:padding="20dp"
+    android:gravity="center_horizontal"
+    android:background="#F5F5F5">
+
+    <!-- App Title -->
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Android Services Demo"
+        android:textSize="22sp"
+        android:textStyle="bold"
+        android:textColor="#1A237E"
+        android:layout_marginBottom="24dp"/>
+
+    <!-- ===================== STARTED SERVICE SECTION ===================== -->
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="── Started Service ──"
+        android:textSize="16sp"
+        android:textStyle="bold"
+        android:textColor="#37474F"
+        android:gravity="center"
+        android:layout_marginBottom="10dp"/>
+
+    <!-- Start Service Button -->
+    <Button
+        android:id="@+id/btnStartService"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="▶ Start Service"
+        android:backgroundTint="#4CAF50"
+        android:textColor="#FFFFFF"
+        android:layout_marginBottom="8dp"/>
+
+    <!-- Stop Service Button -->
+    <Button
+        android:id="@+id/btnStopService"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="⏹ Stop Service"
+        android:backgroundTint="#F44336"
+        android:textColor="#FFFFFF"
+        android:layout_marginBottom="24dp"/>
+
+    <!-- ===================== BOUND SERVICE SECTION ===================== -->
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="── Bound Service ──"
+        android:textSize="16sp"
+        android:textStyle="bold"
+        android:textColor="#37474F"
+        android:gravity="center"
+        android:layout_marginBottom="10dp"/>
+
+    <!-- Bind Service Button -->
+    <Button
+        android:id="@+id/btnBindService"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="🔗 Bind Service"
+        android:backgroundTint="#2196F3"
+        android:textColor="#FFFFFF"
+        android:layout_marginBottom="8dp"/>
+
+    <!-- Unbind Service Button -->
+    <Button
+        android:id="@+id/btnUnbindService"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="🔓 Unbind Service"
+        android:backgroundTint="#FF9800"
+        android:textColor="#FFFFFF"
+        android:layout_marginBottom="8dp"/>
+
+    <!-- Get Data Button -->
+    <Button
+        android:id="@+id/btnGetData"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="📊 Get Data from Service"
+        android:backgroundTint="#9C27B0"
+        android:textColor="#FFFFFF"
+        android:layout_marginBottom="24dp"/>
+
+    <!-- ===================== STATUS DISPLAY ===================== -->
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Status:"
+        android:textSize="13sp"
+        android:textColor="#757575"
+        android:layout_marginBottom="4dp"/>
+
+    <TextView
+        android:id="@+id/tvServiceStatus"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Status: Idle"
+        android:textSize="15sp"
+        android:textColor="#212121"
+        android:background="#FFFFFF"
+        android:padding="12dp"
+        android:minHeight="80dp"/>
+
+</LinearLayout>

@@ -1,0 +1,60 @@
+<!-- activity_second.xml
+     ════════════════════════════════════════════════════════════════════
+     Layout for SecondActivity — displays data received via Explicit Intent.
+
+     This is a simple layout with two TextViews.
+     The data displayed here is NOT hardcoded — it comes from the Intent
+     extras that MainActivity sent when starting this Activity.
+
+     TEACHING NOTE:
+     ──────────────
+     Notice that the TextViews here have placeholder text ("Student Name"
+     and "Student ID"). This text is visible in the Android Studio layout
+     preview, but it gets REPLACED at runtime by the Java code in
+     SecondActivity.java using setText().
+
+     android:tools:text can be used for preview-only text that doesn't
+     appear in the running app, but for simplicity we use android:text here.
+-->
+
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:padding="24dp"
+    android:gravity="center">
+
+    <!-- ── Title ─────────────────────────────────────────────────── -->
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Student Details"
+        android:textSize="24sp"
+        android:textStyle="bold"
+        android:textColor="#1565C0"
+        android:layout_marginBottom="32dp" />
+
+    <!-- ── Student Name Display ──────────────────────────────────── -->
+    <!-- This TextView's text will be set programmatically in
+         SecondActivity.java using tvStudentName.setText(...).
+
+         The android:text value here is just a default/fallback that
+         shows in the preview and if the Java code doesn't run. -->
+    <TextView
+        android:id="@+id/tvStudentName"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Student Name"
+        android:textSize="20sp"
+        android:layout_marginBottom="16dp" />
+
+    <!-- ── Student ID Display ────────────────────────────────────── -->
+    <TextView
+        android:id="@+id/tvStudentId"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Student ID"
+        android:textSize="20sp" />
+
+</LinearLayout>

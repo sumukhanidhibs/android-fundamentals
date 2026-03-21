@@ -1,0 +1,134 @@
+<!-- activity_main.xml
+     ════════════════════════════════════════════════════════════════════
+     Layout for MainActivity — the app's home screen.
+
+     LAYOUT EXPLAINED:
+     ─────────────────
+     We use LinearLayout with vertical orientation. This stacks all child
+     views top-to-bottom in the order they appear in the XML.
+
+     WHY LinearLayout here (not ConstraintLayout)?
+     • For simple vertical stacking, LinearLayout is simpler and more
+       readable. ConstraintLayout is better for complex, responsive UIs
+       with overlapping constraints.
+     • Rule of thumb: If your layout is a simple column or row, use
+       LinearLayout. If views need to relate to each other in complex
+       ways, use ConstraintLayout.
+
+     IMPORTANT ATTRIBUTES EXPLAINED:
+     ─────────────────────────────────
+     • android:layout_width / layout_height:
+       - "match_parent" → Fill the parent's entire width/height
+       - "wrap_content" → Shrink to fit the content inside
+       These are REQUIRED on every View. Missing them causes a build error.
+
+     • android:padding vs android:layout_margin:
+       - padding → Space INSIDE the view (between border and content)
+       - margin  → Space OUTSIDE the view (between this view and neighbors)
+       Students often confuse these. Think of it like a picture frame:
+       padding is the mat inside the frame, margin is the wall space
+       around the frame.
+
+     • android:id="@+id/name":
+       - "@+id/" creates a NEW ID in R.java (the generated resource class)
+       - "@id/" references an EXISTING ID (no + sign)
+       - The ID is how you find this view in Java using findViewById()
+-->
+
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:padding="24dp"
+    android:gravity="center_horizontal">
+
+    <!-- ── App Title ─────────────────────────────────────────────── -->
+    <!-- textSize: Use "sp" (scale-independent pixels) for text.
+         SP respects the user's font size preference in device settings.
+         NEVER use "dp" for text size — it won't scale for accessibility.
+
+         textStyle: "bold" makes the text bold. You can combine:
+         "bold|italic" for both. -->
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Student Communication App"
+        android:textSize="22sp"
+        android:textStyle="bold"
+        android:textColor="#1565C0"
+        android:layout_marginBottom="24dp" />
+
+    <!-- ── Student Name Input ────────────────────────────────────── -->
+    <!-- EditText is an editable text field (extends TextView).
+
+         android:hint — Gray placeholder text shown when the field is empty.
+         It disappears when the user starts typing. Different from
+         android:text, which is actual content.
+
+         android:inputType="textPersonName" — Tells the keyboard what type
+         of input to expect. The keyboard may:
+           • Auto-capitalize the first letter
+           • Not suggest email-style completions
+         Other useful types: textEmailAddress, phone, number, textPassword -->
+    <EditText
+        android:id="@+id/etStudentName"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Enter Student Name"
+        android:inputType="textPersonName"
+        android:layout_marginBottom="16dp"
+        android:padding="12dp" />
+
+    <!-- ── Button 1: Explicit Intent ─────────────────────────────── -->
+    <!-- Each button has a unique android:id so we can find it in Java.
+
+         layout_marginBottom creates spacing between buttons.
+
+         CAREFUL with button text: Keep it short and action-oriented.
+         "Open Second Activity" is descriptive for learning. In a real app,
+         you'd use something like "View Details". -->
+    <Button
+        android:id="@+id/btnOpenSecondActivity"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Open Second Activity (Explicit)"
+        android:layout_marginBottom="12dp"
+        android:textAllCaps="false" />
+
+    <!-- ── Button 2: Implicit Intent — Email ─────────────────────── -->
+    <Button
+        android:id="@+id/btnSendEmail"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Send Email (Implicit)"
+        android:layout_marginBottom="12dp"
+        android:textAllCaps="false" />
+
+    <!-- ── Button 3: Implicit Intent — Website ───────────────────── -->
+    <Button
+        android:id="@+id/btnOpenWebsite"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Open Website (Implicit)"
+        android:layout_marginBottom="12dp"
+        android:textAllCaps="false" />
+
+    <!-- ── Button 4: Implicit Intent — Phone Dialer ──────────────── -->
+    <Button
+        android:id="@+id/btnDialPhone"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Dial Phone (Implicit)"
+        android:layout_marginBottom="12dp"
+        android:textAllCaps="false" />
+
+    <!-- ── Button 5: Broadcast Intent ────────────────────────────── -->
+    <Button
+        android:id="@+id/btnSendBroadcast"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Send Broadcast"
+        android:textAllCaps="false" />
+
+</LinearLayout>

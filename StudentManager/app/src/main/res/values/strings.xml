@@ -1,0 +1,4 @@
+<resources>
+    <string name="app_name">StudentManager</string>
+    <string name="sync_service_description">Syncs student data to server</string>
+</resources>

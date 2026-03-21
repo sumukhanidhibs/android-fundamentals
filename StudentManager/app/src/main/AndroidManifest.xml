@@ -1,0 +1,160 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    AndroidManifest.xml — Student Management App
+    This manifest demonstrates ALL common elements:
+    - Package/namespace identity
+    - Application-wide configuration
+    - Activity declarations (launcher + secondary)
+    - Service declaration
+    - BroadcastReceiver declaration
+    - Permissions (INTERNET, ACCESS_NETWORK_STATE)
+    - Metadata
+    - SDK versioning is handled in build.gradle (Hedgehog standard)
+-->
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
+
+    <!-- ============================================================
+         SECTION A: PERMISSIONS
+         These are declared OUTSIDE <application> but INSIDE <manifest>.
+         They tell the Android system what sensitive features this app
+         needs access to.
+         ============================================================ -->
+
+    <!-- INTERNET: Required for ANY network call (Retrofit, Volley, etc.)
+         This is a "normal" permission — granted automatically at install.
+         Without this, even a simple HTTP request throws SecurityException. -->
+    <uses-permission android:name="android.permission.INTERNET" />
+
+    <!-- ACCESS_NETWORK_STATE: Lets the app check if Wi-Fi or mobile data
+         is available BEFORE attempting a network call.
+         This prevents crashes and poor user experience when offline. -->
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+
+
+    <!-- ============================================================
+         SECTION B: APPLICATION
+         The <application> tag wraps ALL components (activities, services,
+         receivers, providers). Attributes set here act as defaults for
+         every component inside.
+         ============================================================ -->
+    <application
+        android:allowBackup="true"
+        android:icon="@mipmap/ic_launcher"
+        android:label="@string/app_name"
+        android:roundIcon="@mipmap/ic_launcher_round"
+        android:supportsRtl="true"
+        android:theme="@style/Theme.StudentManager"
+        tools:targetApi="31">
+
+        <!-- ========================================================
+             COMPONENT 1: MainActivity (LAUNCHER)
+             This is the ENTRY POINT of the app.
+             The intent-filter with MAIN + LAUNCHER tells Android:
+             "Put this app's icon in the app drawer, and when the
+              user taps it, start THIS activity."
+
+             exported="true" is MANDATORY here because the system
+             launcher (an external app) needs to start this activity.
+             Forgetting this causes a build error on API 31+.
+             ======================================================== -->
+        <activity
+            android:name=".MainActivity"
+            android:exported="true"
+            android:label="@string/app_name"
+            android:screenOrientation="portrait">
+
+            <intent-filter>
+                <!-- MAIN = this is an entry point (not launched by another activity) -->
+                <action android:name="android.intent.action.MAIN" />
+                <!-- LAUNCHER = show in the app drawer -->
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+
+        <!-- ========================================================
+             COMPONENT 2: SecondActivity (INTERNAL)
+             This activity shows individual student details.
+             It is launched ONLY from within our own app using an
+             explicit Intent, so:
+             - No <intent-filter> is needed
+             - exported="false" prevents other apps from launching it
+               (security best practice)
+             ======================================================== -->
+        <activity
+            android:name=".SecondActivity"
+            android:exported="false"
+            android:label="Student Details"
+            android:parentActivityName=".MainActivity">
+
+            <!-- parentActivityName enables the Up/Back arrow in the
+                 action bar to navigate back to MainActivity.
+                 This metadata tag provides the same info for API 15 and below. -->
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value=".MainActivity" />
+        </activity>
+
+        <!-- ========================================================
+             COMPONENT 3: DataSyncService (BACKGROUND SERVICE)
+             This service simulates syncing student data to a server.
+             It runs in the background without any UI.
+
+             exported="false" = only our app can start this service.
+             No other app on the device can bind to or invoke it.
+
+             If you forget to declare this tag and call startService(),
+             Android throws IllegalStateException.
+             ======================================================== -->
+        <service
+            android:name=".DataSyncService"
+            android:exported="false"
+            android:description="@string/sync_service_description" />
+
+        <!-- ========================================================
+             COMPONENT 4: NotificationReceiver (BROADCAST RECEIVER)
+             Listens for our CUSTOM broadcast action.
+             When DataSyncService finishes syncing, it sends a broadcast
+             with action "com.example.studentmanager.STUDENT_ADDED".
+             This receiver catches it and shows a notification/toast.
+
+             exported="false" = only broadcasts sent from within our
+             own app (using LocalBroadcastManager or explicit intent)
+             can trigger this. External apps cannot fire it.
+
+             NOTE: For custom app-internal broadcasts, manifest
+             declaration works fine. For most SYSTEM broadcasts
+             (like CONNECTIVITY_CHANGE), you must register dynamically
+             in Java code since Android 8.0 (API 26).
+             ======================================================== -->
+        <receiver
+            android:name=".NotificationReceiver"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="com.example.studentmanager.STUDENT_ADDED" />
+            </intent-filter>
+        </receiver>
+
+        <!-- ========================================================
+             METADATA
+             Arbitrary key-value pairs that libraries or your own code
+             can read at runtime using PackageManager.
+
+             Example 1: Custom app metadata (our own usage)
+             Example 2: Google Maps API key (library usage)
+             ======================================================== -->
+
+        <!-- Custom metadata: readable in Java via PackageManager -->
+        <meta-data
+            android:name="app_version_label"
+            android:value="Student Manager v1.0 - Learning Edition" />
+
+        <!-- Example: Google Maps API key (commented out — uncomment if using Maps)
+        <meta-data
+            android:name="com.google.android.geo.API_KEY"
+            android:value="${MAPS_API_KEY}" />
+        -->
+
+    </application>
+
+</manifest>

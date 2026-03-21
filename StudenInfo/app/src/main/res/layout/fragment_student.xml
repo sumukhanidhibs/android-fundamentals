@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:padding="16dp"
+    android:background="#E8F5E9">
+
+    <!-- Fragment Title -->
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="📋 Student Fragment"
+        android:textSize="18sp"
+        android:textStyle="bold"
+        android:textColor="#1B5E20"
+        android:layout_marginBottom="12dp"/>
+
+    <!-- Fragment Student Info — Populated by Fragment Context -->
+    <TextView
+        android:id="@+id/tvFragmentInfo"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Loading..."
+        android:textSize="16sp"
+        android:textColor="#212121"
+        android:padding="12dp"
+        android:background="#FFFFFF"
+        android:layout_marginBottom="12dp"/>
+
+    <!-- Shows which context type is being used -->
+    <TextView
+        android:id="@+id/tvContextType"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Context Type: "
+        android:textSize="13sp"
+        android:textColor="#4CAF50"
+        android:fontFamily="monospace"
+        android:padding="8dp"/>
+
+</LinearLayout>

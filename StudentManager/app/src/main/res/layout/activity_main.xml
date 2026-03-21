@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- activity_main.xml
+     Layout for the LAUNCHER activity.
+     Displays version metadata from manifest and navigation buttons. -->
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:gravity="center"
+    android:padding="24dp">
+
+    <!-- App title -->
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Student Management App"
+        android:textSize="24sp"
+        android:textStyle="bold"
+        android:layout_marginBottom="8dp" />
+
+    <!-- Displays the value read from <meta-data> in the manifest -->
+    <TextView
+        android:id="@+id/tvVersionLabel"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Loading version..."
+        android:textSize="14sp"
+        android:textColor="#757575"
+        android:layout_marginBottom="32dp" />
+
+    <!-- Opens SecondActivity (declared in manifest with exported="false") -->
+    <Button
+        android:id="@+id/btnOpenDetails"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="View Student Details"
+        android:layout_marginBottom="16dp" />
+
+    <!-- Starts DataSyncService (declared in manifest as <service>) -->
+    <Button
+        android:id="@+id/btnStartSync"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Start Data Sync" />
+
+</LinearLayout>

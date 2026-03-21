@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    Root layout: LinearLayout with vertical orientation
+    WHY LinearLayout: Simplest layout for stacking views top to bottom.
+    We use it here to keep the focus on Context concepts, not complex UI.
+-->
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:padding="16dp"
+    android:background="#F5F5F5">
+
+    <!-- App Title -->
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/android_context_demo"
+        android:textSize="22sp"
+        android:textStyle="bold"
+        android:textColor="#1A237E"
+        android:gravity="center"
+        android:layout_marginBottom="8dp"/>
+
+    <!-- Welcome Text — Populated by Application Context data -->
+    <TextView
+        android:id="@+id/tvWelcome"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/welcome_student"
+        android:textSize="16sp"
+        android:textColor="#333333"
+        android:gravity="center"
+        android:layout_marginBottom="24dp"/>
+
+    <!-- Button 1: Show Student Info (Activity Context + Intent) -->
+    <Button
+        android:id="@+id/btnShowInfo"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/show_student_info_activity_context"
+        android:backgroundTint="#1565C0"
+        android:textColor="#FFFFFF"
+        android:layout_marginBottom="12dp"/>
+
+    <!-- Button 2: Start Background Service (Service Context) -->
+    <Button
+        android:id="@+id/btnStartService"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Start Background Service"
+        android:backgroundTint="#2E7D32"
+        android:textColor="#FFFFFF"
+        android:layout_marginBottom="12dp"/>
+
+    <!-- Button 3: Send Broadcast (BroadcastReceiver Context) -->
+    <Button
+        android:id="@+id/btnSendBroadcast"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Send Broadcast (Receiver Context)"
+        android:backgroundTint="#E65100"
+        android:textColor="#FFFFFF"
+        android:layout_marginBottom="12dp"/>
+
+    <!-- Button 4: Load Fragment (Fragment Context) -->
+    <Button
+        android:id="@+id/btnLoadFragment"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Load Student Fragment"
+        android:backgroundTint="#6A1B9A"
+        android:textColor="#FFFFFF"
+        android:layout_marginBottom="16dp"/>
+
+    <!--
+        Fragment Container — This is where StudentFragment will be loaded.
+        WHY FrameLayout: It is specifically designed to hold a single child view
+        and is the standard container for Fragments.
+        android:id is REQUIRED — FragmentManager needs it to find this container.
+    -->
+    <FrameLayout
+        android:id="@+id/fragmentContainer"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:background="#FFFFFF"
+        android:elevation="2dp"/>
+
+</LinearLayout>

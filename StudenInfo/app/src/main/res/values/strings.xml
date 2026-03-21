@@ -1,0 +1,6 @@
+<resources>
+    <string name="app_name">StudenInfo</string>
+    <string name="show_student_info_activity_context">Show Student Info (Activity Context)</string>
+    <string name="android_context_demo">Android Context Demo</string>
+    <string name="welcome_student">Welcome, Student!</string>
+</resources>

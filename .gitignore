@@ -1,0 +1,43 @@
+# Android Studio generated files
+*.iml
+.gradle/
+local.properties
+.idea/
+*.idea/
+
+# Build outputs
+build/
+*/build/
+
+# Generated source files
+**/generated/
+
+# Kotlin/Java build artifacts
+*.class
+*.jar
+*.aar
+*.apk
+*.aab
+
+# NDK
+obj/
+*.so
+
+# Logs
+*.log
+
+# Local configuration
+local.properties
+keystore.properties
+*.jks
+*.keystore
+
+# OS generated
+.DS_Store
+Thumbs.db
+
+# Capture files from Android profiler
+*.hprof
+
+# Android Studio captures
+captures/

@@ -1,0 +1,149 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
+
+    <!-- ══════════════════════════════════════════════════════════════
+         PERMISSIONS
+         ════════════════════════════════════════════════════════════════
+         We don't need any special permissions for this app because:
+         • ACTION_DIAL (not ACTION_CALL) doesn't require CALL_PHONE
+         • ACTION_VIEW for URLs doesn't require INTERNET (the browser handles it)
+         • ACTION_SENDTO for email doesn't require special permissions
+
+         If we used ACTION_CALL instead of ACTION_DIAL, we'd need:
+         <uses-permission android:name="android.permission.CALL_PHONE" />
+         And we'd need to request it at runtime (dangerous permission).
+    -->
+
+    <application
+        android:allowBackup="true"
+        android:icon="@mipmap/ic_launcher"
+        android:label="Student Communication App"
+        android:roundIcon="@mipmap/ic_launcher_round"
+        android:supportsRtl="true"
+        android:theme="@style/Theme.StudentCommunicationApp">
+
+        <!-- ── MainActivity (Launcher) ───────────────────────────── -->
+        <!-- android:exported="true" is REQUIRED for the launcher activity.
+             It means other apps (including the system launcher/home screen)
+             can start this Activity. Without it, tapping the app icon
+             would fail on Android 12+.
+
+             The <intent-filter> with:
+               • action.MAIN    → This is an entry point (has a main() equivalent)
+               • category.LAUNCHER → Show this in the app launcher/drawer
+
+             Together they make this the Activity that opens when the user
+             taps your app icon. -->
+        <activity
+            android:name=".MainActivity"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+
+        <!-- ── SecondActivity ────────────────────────────────────── -->
+        <!-- android:exported="false" → Only our own app can start this
+             Activity. Since we use an Explicit Intent (naming the class
+             directly), no other app needs access.
+
+             android:parentActivityName tells Android that pressing the
+             Up/Back button in the ActionBar should navigate to MainActivity.
+             This creates proper "Up" navigation behavior. -->
+        <activity
+            android:name=".SecondActivity"
+            android:exported="false"
+            android:parentActivityName=".MainActivity" />
+
+        <!-- ── ShareReceiverActivity (Intent Filter Example) ─────── -->
+        <!-- This is an OPTIONAL Activity that demonstrates how to make
+             your app appear in the system "Share" menu.
+
+             The <intent-filter> tells Android:
+             "This activity can handle ACTION_SEND with text/plain data."
+
+             When another app shares text (e.g., sharing a URL from Chrome),
+             Android's chooser dialog will include your app as an option.
+
+             CATEGORY_DEFAULT is REQUIRED for implicit intents to work.
+             Without it, Android will NEVER match this activity to implicit
+             intents, even if the action matches perfectly.
+
+             Uncomment this block to enable sharing functionality:
+        -->
+        <!--
+        <activity
+            android:name=".ShareReceiverActivity"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.SEND" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <data android:mimeType="text/plain" />
+            </intent-filter>
+        </activity>
+        -->
+
+        <!-- ── BroadcastReceiver (Static Registration) ───────────── -->
+        <!-- This registers the receiver in the manifest (static registration).
+
+             android:exported="false" → Only broadcasts from within our
+             app will be delivered. This is important for security.
+
+             The <intent-filter> specifies which broadcast action this
+             receiver listens for. It must match the action string used
+             in sendBroadcast() in MainActivity.
+
+             NOTE: Starting with Android 8.0 (API 26), statically registered
+             receivers have restrictions. Most implicit broadcasts won't
+             wake up your app anymore. Custom broadcasts (like ours) still
+             work, but it's better to use dynamic registration (in Java)
+             for custom broadcasts. We show both methods for learning.
+
+             We also dynamically register this same receiver class in
+             MainActivity.java for comparison. Both will fire when a
+             matching broadcast is sent. -->
+        <receiver
+            android:name=".MyBroadcastReceiver"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="com.example.studentcommunicationapp.CUSTOM_BROADCAST" />
+            </intent-filter>
+        </receiver>
+
+    </application>
+
+    <!-- ── Queries Declaration (Android 11+ / API 30+) ───────────── -->
+    <!-- Starting with Android 11, your app can't "see" other apps by
+         default due to package visibility restrictions. If you use
+         resolveActivity() or queryIntentActivities(), you need to declare
+         which intents you plan to resolve.
+
+         Without these <queries>, resolveActivity() returns null even if
+         a matching app IS installed, and your implicit intents appear
+         to fail. This is a VERY COMMON gotcha on modern Android.
+
+         CAREFUL: The <queries> tag goes OUTSIDE <application> but
+         INSIDE <manifest>. Placing it wrong causes a build error. -->
+    <queries>
+        <!-- Allows resolveActivity() to find email apps -->
+        <intent>
+            <action android:name="android.intent.action.SENDTO" />
+            <data android:scheme="mailto" />
+        </intent>
+
+        <!-- Allows resolveActivity() to find web browsers -->
+        <intent>
+            <action android:name="android.intent.action.VIEW" />
+            <data android:scheme="https" />
+        </intent>
+
+        <!-- Allows resolveActivity() to find the phone dialer -->
+        <intent>
+            <action android:name="android.intent.action.DIAL" />
+            <data android:scheme="tel" />
+        </intent>
+    </queries>
+
+</manifest>
