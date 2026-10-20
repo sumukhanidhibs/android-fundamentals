@@ -16,7 +16,7 @@ namespace UnicodeToNudi
 
         public SettingsForm(Settings settings)
         {
-            Text = "Unicode to Nudi - Settings";
+            Text = "Unicode to Nudi " + Program.VersionText + " - Settings";
             FormBorderStyle = FormBorderStyle.FixedDialog;
             MaximizeBox = false;
             MinimizeBox = false;

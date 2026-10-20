@@ -26,6 +26,10 @@ Only the Kannada text changes:
 - **English words, numbers and punctuation are not touched.** They keep their text, font and formatting.
 - **Ctrl+Z** undoes the whole conversion in one step.
 
+A small **"Converting to Nudi, please wait..."** window with a progress bar shows while it works.
+
+**Updating:** just run the new `UnicodeToNudi.exe`. It closes the copy that's already running and takes over. Hover over the tray icon to see the version, e.g. `Unicode to Nudi 1.0.8`; the last number is the build number on the Releases page.
+
 In other programs (Notepad, browsers, ...) the same shortcut copies the selection, converts it and pastes it back. English text is kept, but the font can't be changed there.
 
 ## Settings
@@ -47,7 +51,8 @@ Settings are saved in `%APPDATA%\UnicodeToNudi\settings.ini`.
 | `WordConverter.cs` | Talks to the running Word through COM. It reads the selected text, lists the distinct Kannada words, and runs one Word **Replace All** per word, longest first. Each Replace All also applies the Nudi font in every font slot (Word draws `¹` = ಸಿ and `²` = ಶಿ with the East Asian font) and turns off spell-check. Anything left over is converted word by word. It all happens inside one undo step. Word's wildcard search isn't used, because it treats a letter plus its vowel sign (ಸಾ) as one character |
 | `ClipboardConverter.cs` | Ctrl+C → convert → Ctrl+V fallback for other programs |
 | `HotkeyWindow.cs` | Global shortcut via `RegisterHotKey` |
-| `TrayApp.cs` | Tray icon, menu and notifications |
+| `TrayApp.cs` | Tray icon, menu and notifications. Runs the Word conversion on a background thread |
+| `ProgressForm.cs` | The "please wait" window with a progress bar |
 | `SettingsForm.cs`, `Settings.cs` | Settings window and storage |
 
 ## Tests

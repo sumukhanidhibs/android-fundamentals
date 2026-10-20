@@ -16,6 +16,10 @@ namespace UnicodeToNudi
         private const int WdFindStop = 0;
         private const int WdReplaceAll = 2;
         private const string MarkerName = "UnicodeToNudiSelection";
+        private const int WdNoProofing = 1024;
+
+        // Nudi characters that Word may draw with a non-Latin font slot: ¹ = ಸಿ, ² = ಶಿ
+        private static readonly string[] FontSensitiveChars = { "\u00B9", "\u00B2" };
 
         // Word's Find has a 255-character limit on the search text
         private const int MaxFindLength = 255;
@@ -40,7 +44,8 @@ namespace UnicodeToNudi
             }
         }
 
-        public static Result ConvertSelection(object wordApplication, string nudiFont)
+        /// <param name="progress">Called with 0-100 while converting (from this thread).</param>
+        public static Result ConvertSelection(object wordApplication, string nudiFont, Action<int> progress)
         {
             dynamic word = wordApplication;
             dynamic selection = word.Selection;
@@ -76,7 +81,7 @@ namespace UnicodeToNudi
                 string text = marker.Range.Text;
                 if (NudiConverter.ContainsKannada(text))
                 {
-                    ReplaceAllWords(word, marker, text, nudiFont, result);
+                    ReplaceAllWords(marker, text, nudiFont, result, progress);
 
                     // Whatever Replace All could not handle: word by word
                     selStart = marker.Range.Start;
@@ -86,6 +91,9 @@ namespace UnicodeToNudi
                     {
                         ConvertRuns(doc, selStart, selEnd, rest, nudiFont, result);
                     }
+
+                    FixFontSensitiveChars(doc, marker, nudiFont);
+                    progress?.Invoke(100);
                 }
 
                 marker.Range.Select();
@@ -131,7 +139,7 @@ namespace UnicodeToNudi
         /// Longest words go first, so a short word can only ever match a whole
         /// remaining word, never part of a longer one that is still in Unicode.
         /// </summary>
-        private static void ReplaceAllWords(dynamic word, dynamic marker, string text, string nudiFont, Result result)
+        private static void ReplaceAllWords(dynamic marker, string text, string nudiFont, Result result, Action<int> progress)
         {
             var counts = new Dictionary<string, int>();
             foreach (string run in KannadaRuns(text))
@@ -159,15 +167,25 @@ namespace UnicodeToNudi
                 replacement.Text = nudi;
                 SetNudiFont(replacement.Font, nudiFont);
                 replacement.NoProofing = true;
+                try
+                {
+                    // No language: no red underlines, and no Kannada font rules for the Nudi text
+                    replacement.LanguageID = WdNoProofing;
+                }
+                catch (Exception)
+                {
+                    // ignore
+                }
                 find.Format = true;
                 if ((bool)find.Execute(Replace: WdReplaceAll))
                 {
                     result.Converted += counts[run];
                 }
 
-                if (k % 25 == 0)
+                if (k % 10 == 0)
                 {
-                    ShowStatus(word, "Unicode to Nudi: converting... " + (k * 100 / words.Count) + "%");
+                    // The last 10% is for the font fix-up pass
+                    progress?.Invoke(k * 90 / words.Count);
                 }
             }
         }
@@ -258,6 +276,14 @@ namespace UnicodeToNudi
             dynamic converted = doc.Range(start, start + nudi.Length);
             SetNudiFont(converted.Font, nudiFont);
             converted.NoProofing = true;
+            try
+            {
+                converted.LanguageID = WdNoProofing;
+            }
+            catch (Exception)
+            {
+                // ignore
+            }
             return nudi.Length;
         }
 
@@ -277,6 +303,46 @@ namespace UnicodeToNudi
             catch (Exception)
             {
                 // ignore
+            }
+        }
+
+        /// <summary>
+        /// Sets the Nudi font directly on every ¹ (ಸಿ) and ² (ಶಿ) produced by the
+        /// conversion. Word treats these as digits and may draw them with the complex
+        /// script or East Asian font slot, where they appear as superscript 1 and 2.
+        /// Formatting set through Replace All does not always reach those slots, so
+        /// each occurrence is fixed directly.
+        /// </summary>
+        private static void FixFontSensitiveChars(dynamic doc, dynamic marker, string nudiFont)
+        {
+            foreach (string c in FontSensitiveChars)
+            {
+                int end = marker.Range.End;
+                int from = marker.Range.Start;
+                while (from < end)
+                {
+                    dynamic range = doc.Range(from, end);
+                    dynamic find = range.Find;
+                    PrepareFind(find, c);
+                    if (!(bool)find.Execute())
+                    {
+                        break;
+                    }
+                    int start = range.Start;
+                    if (start >= end)
+                    {
+                        break;
+                    }
+                    dynamic found = doc.Range(start, start + 1);
+                    dynamic font = found.Font;
+                    // Only characters this conversion produced (already Nudi in the
+                    // Latin slot); leave e.g. an English "km²" alone
+                    if ((string)font.NameAscii == nudiFont)
+                    {
+                        SetNudiFont(font, nudiFont);
+                    }
+                    from = start + 1;
+                }
             }
         }
 
@@ -318,6 +384,13 @@ namespace UnicodeToNudi
             try
             {
                 font.NameFarEast = nudiFont;
+            }
+            catch (Exception)
+            {
+                // ignore
+            }
+            try
+            {
                 font.NameBi = nudiFont;
             }
             catch (Exception)

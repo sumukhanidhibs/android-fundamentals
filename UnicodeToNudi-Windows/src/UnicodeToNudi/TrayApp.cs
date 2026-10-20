@@ -2,6 +2,7 @@ using System;
 using System.Drawing;
 using System.Drawing.Text;
 using System.Runtime.InteropServices;
+using System.Threading;
 using System.Windows.Forms;
 
 namespace UnicodeToNudi
@@ -18,24 +19,37 @@ namespace UnicodeToNudi
         private readonly NotifyIcon trayIcon;
         private readonly HotkeyWindow hotkeyWindow;
         private readonly ToolStripMenuItem convertItem;
+        private readonly SynchronizationContext ui;
+        private readonly EventWaitHandle exitEvent;
+        private readonly RegisteredWaitHandle exitWait;
         private bool busy;
 
         public TrayApp(bool quietStart)
         {
+            ui = SynchronizationContext.Current ?? new WindowsFormsSynchronizationContext();
             settings = Settings.Load();
-            if (settings.IsFirstRun)
+            try
             {
-                // Start with Windows by default; can be switched off in Settings
-                try
+                if (settings.IsFirstRun || Settings.StartWithWindows)
                 {
+                    // Start with Windows by default (can be switched off in Settings),
+                    // and keep the entry pointing at this copy of the exe
                     Settings.StartWithWindows = true;
+                }
+                if (settings.IsFirstRun)
+                {
                     settings.Save();
                 }
-                catch (Exception)
-                {
-                    // Not fatal: the user can still enable it in Settings
-                }
             }
+            catch (Exception)
+            {
+                // Not fatal: the user can still enable it in Settings
+            }
+
+            // A newer copy being started asks this one to exit
+            exitEvent = new EventWaitHandle(false, EventResetMode.AutoReset, Program.ExitEventName);
+            exitWait = ThreadPool.RegisterWaitForSingleObject(exitEvent,
+                (state, timedOut) => ui.Post(_ => ExitThread(), null), null, Timeout.Infinite, true);
 
             convertItem = new ToolStripMenuItem("Convert selection", null, (s, e) => ConvertSelection());
             var menu = new ContextMenuStrip();
@@ -64,7 +78,7 @@ namespace UnicodeToNudi
             }
             else if (!quietStart)
             {
-                Notify("Unicode to Nudi is running",
+                Notify("Unicode to Nudi " + Program.VersionText + " is running",
                     "Select Kannada text in Word and press " + settings.Hotkey.Name + ".",
                     ToolTipIcon.Info);
             }
@@ -73,7 +87,7 @@ namespace UnicodeToNudi
         private void RegisterHotkey()
         {
             bool ok = hotkeyWindow.Register(settings.Hotkey);
-            trayIcon.Text = "Unicode to Nudi (" + settings.Hotkey.Name + ")";
+            trayIcon.Text = "Unicode to Nudi " + Program.VersionText + " (" + settings.Hotkey.Name + ")";
             convertItem.Text = "Convert selection (" + settings.Hotkey.Name + ")";
             if (!ok)
             {
@@ -90,32 +104,87 @@ namespace UnicodeToNudi
                 return;
             }
             busy = true;
-            try
+            if (NativeMethods.GetForegroundClassName() == WordWindowClass)
             {
-                if (NativeMethods.GetForegroundClassName() == WordWindowClass && ConvertInWord())
-                {
-                    return;
-                }
-                ConvertWithClipboard();
+                ConvertInWord();
             }
-            finally
+            else
             {
-                busy = false;
+                try
+                {
+                    ConvertWithClipboard();
+                }
+                finally
+                {
+                    busy = false;
+                }
             }
         }
 
-        /// <summary>Returns false if Word could not be reached, so the clipboard method is used instead.</summary>
-        private bool ConvertInWord()
+        /// <summary>
+        /// Converts in Word on a background thread while a "please wait" window shows
+        /// progress. Falls back to the clipboard method if Word can't be reached.
+        /// </summary>
+        private void ConvertInWord()
         {
-            object word = WordConverter.GetRunningWord();
-            if (word == null)
+            var progress = new ProgressForm();
+            progress.Show();
+
+            var worker = new Thread(() =>
             {
-                return false;
-            }
+                WordConverter.Result result = null;
+                Exception error = null;
+                bool wordFound = false;
+                try
+                {
+                    object word = WordConverter.GetRunningWord();
+                    if (word != null)
+                    {
+                        wordFound = true;
+                        try
+                        {
+                            result = WordConverter.ConvertSelection(word, settings.NudiFont,
+                                percent => ui.Post(_ => progress.SetProgress(percent), null));
+                        }
+                        finally
+                        {
+                            Marshal.ReleaseComObject(word);
+                        }
+                    }
+                }
+                catch (Exception ex)
+                {
+                    error = ex;
+                }
+                ui.Post(_ => FinishWordConversion(progress, wordFound, result, error), null);
+            });
+            // Word's COM objects need a single-threaded apartment
+            worker.SetApartmentState(ApartmentState.STA);
+            worker.IsBackground = true;
+            worker.Start();
+        }
+
+        private void FinishWordConversion(ProgressForm progress, bool wordFound, WordConverter.Result result, Exception error)
+        {
+            progress.Close();
+            progress.Dispose();
             try
             {
-                WordConverter.Result result = WordConverter.ConvertSelection(word, settings.NudiFont);
-                if (!result.HadSelection)
+                if (error is COMException)
+                {
+                    Notify("Word is busy",
+                        "Close any open dialog box in Word and try again. (" + error.Message + ")",
+                        ToolTipIcon.Warning);
+                }
+                else if (error != null)
+                {
+                    Notify("Could not convert", error.Message, ToolTipIcon.Error);
+                }
+                else if (!wordFound)
+                {
+                    ConvertWithClipboard();
+                }
+                else if (!result.HadSelection)
                 {
                     Notify("Nothing selected", "Select the Kannada text first, then press " + settings.Hotkey.Name + ".", ToolTipIcon.Info);
                 }
@@ -129,18 +198,10 @@ namespace UnicodeToNudi
                         result.Skipped + " Kannada word(s) next to fields or special objects were not converted. Select them separately and try again.",
                         ToolTipIcon.Warning);
                 }
-                return true;
-            }
-            catch (COMException ex)
-            {
-                Notify("Word is busy",
-                    "Close any open dialog box in Word and try again. (" + ex.Message + ")",
-                    ToolTipIcon.Warning);
-                return true;
             }
             finally
             {
-                Marshal.ReleaseComObject(word);
+                busy = false;
             }
         }
 
@@ -229,6 +290,8 @@ namespace UnicodeToNudi
 
         protected override void ExitThreadCore()
         {
+            exitWait.Unregister(null);
+            exitEvent.Dispose();
             hotkeyWindow.Dispose();
             trayIcon.Visible = false;
             trayIcon.Dispose();
