@@ -57,6 +57,9 @@ namespace UnicodeToNudi
         public Hotkey Hotkey = Hotkey.Choices[0];
         public string NudiFont = "Nudi 01 e";
 
+        /// <summary>True when no settings file existed yet, i.e. the app's first run.</summary>
+        public bool IsFirstRun;
+
         private static string FilePath
         {
             get
@@ -68,10 +71,10 @@ namespace UnicodeToNudi
 
         public static Settings Load()
         {
-            var settings = new Settings();
+            var settings = new Settings { IsFirstRun = !File.Exists(FilePath) };
             try
             {
-                if (File.Exists(FilePath))
+                if (!settings.IsFirstRun)
                 {
                     foreach (string line in File.ReadAllLines(FilePath, Encoding.UTF8))
                     {

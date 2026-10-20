@@ -12,7 +12,7 @@ Windows may show **"Windows protected your PC"** because the app isn't code-sign
 
 ## How to use
 
-1. Run `UnicodeToNudi.exe`. A blue **ಕ** icon appears near the clock (it may be under the **^** arrow).
+1. Run `UnicodeToNudi.exe`. A blue **ಕ** icon appears near the clock (it may be under the **^** arrow). On first run it also adds itself to Windows startup, so it's always ready after you sign in. You can switch this off in Settings.
 2. In Word, select the text that has Kannada Unicode in it. It can be a word, a paragraph or the whole document (Ctrl+A).
 3. Press **Ctrl+Alt+N**.
 
@@ -22,7 +22,7 @@ Only the Kannada text changes:
 |---|---|
 | `Report ಸಂಖ್ಯೆ 25: ಕನ್ನಡ (Kannada) Office` | `Report` `¸ÀASÉå` `25:` `PÀ£ÀßqÀ` `(Kannada) Office` |
 
-- Each Kannada word is replaced with its Nudi text **and set to the Nudi font**, so it shows as Kannada.
+- Each Kannada word is replaced with its Nudi text **and set to the Nudi font**, so it shows as Kannada. Spell-check is turned off for that text, so there are no red underlines.
 - **English words, numbers and punctuation are not touched.** They keep their text, font and formatting.
 - **Ctrl+Z** undoes the whole conversion in one step.
 
@@ -44,7 +44,7 @@ Settings are saved in `%APPDATA%\UnicodeToNudi\settings.ini`.
 | File | Purpose |
 |---|---|
 | `NudiConverter.cs` | Conversion logic, a C# port of the Android app's `NudiConverter.java` |
-| `WordConverter.cs` | Talks to the running Word through COM. It reads the selected text, finds each Kannada word, and replaces that whole word with Nudi in the Nudi font, all inside one undo step. Word's wildcard search isn't used, because it treats a letter plus its vowel sign (ಸಾ) as one character and would convert only bare letters |
+| `WordConverter.cs` | Talks to the running Word through COM. It reads the selected text, lists the distinct Kannada words, and runs one Word **Replace All** per word, longest first. Each Replace All also applies the Nudi font in every font slot (Word draws `¹` = ಸಿ and `²` = ಶಿ with the East Asian font) and turns off spell-check. Anything left over is converted word by word. It all happens inside one undo step. Word's wildcard search isn't used, because it treats a letter plus its vowel sign (ಸಾ) as one character |
 | `ClipboardConverter.cs` | Ctrl+C → convert → Ctrl+V fallback for other programs |
 | `HotkeyWindow.cs` | Global shortcut via `RegisterHotKey` |
 | `TrayApp.cs` | Tray icon, menu and notifications |

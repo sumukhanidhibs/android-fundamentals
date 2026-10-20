@@ -23,6 +23,19 @@ namespace UnicodeToNudi
         public TrayApp(bool quietStart)
         {
             settings = Settings.Load();
+            if (settings.IsFirstRun)
+            {
+                // Start with Windows by default; can be switched off in Settings
+                try
+                {
+                    Settings.StartWithWindows = true;
+                    settings.Save();
+                }
+                catch (Exception)
+                {
+                    // Not fatal: the user can still enable it in Settings
+                }
+            }
 
             convertItem = new ToolStripMenuItem("Convert selection", null, (s, e) => ConvertSelection());
             var menu = new ContextMenuStrip();

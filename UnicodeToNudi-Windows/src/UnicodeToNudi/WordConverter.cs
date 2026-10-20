@@ -14,6 +14,8 @@ namespace UnicodeToNudi
     internal static class WordConverter
     {
         private const int WdFindStop = 0;
+        private const int WdReplaceAll = 2;
+        private const string MarkerName = "UnicodeToNudiSelection";
 
         // Word's Find has a 255-character limit on the search text
         private const int MaxFindLength = 255;
@@ -67,18 +69,37 @@ namespace UnicodeToNudi
 
             bool screenUpdating = word.ScreenUpdating;
             word.ScreenUpdating = false;
+            // A bookmark keeps track of the selection while its text changes length
+            dynamic marker = doc.Bookmarks.Add(MarkerName, doc.Range(selStart, selEnd));
             try
             {
-                string text = doc.Range(selStart, selEnd).Text;
+                string text = marker.Range.Text;
                 if (NudiConverter.ContainsKannada(text))
                 {
-                    selEnd = ConvertRuns(doc, selStart, selEnd, text, nudiFont, result);
+                    ReplaceAllWords(word, marker, text, nudiFont, result);
+
+                    // Whatever Replace All could not handle: word by word
+                    selStart = marker.Range.Start;
+                    selEnd = marker.Range.End;
+                    string rest = doc.Range(selStart, selEnd).Text;
+                    if (NudiConverter.ContainsKannada(rest))
+                    {
+                        ConvertRuns(doc, selStart, selEnd, rest, nudiFont, result);
+                    }
                 }
 
-                doc.Range(selStart, selEnd).Select();
+                marker.Range.Select();
             }
             finally
             {
+                try
+                {
+                    marker.Delete();
+                }
+                catch (Exception)
+                {
+                    // ignore
+                }
                 ResetFind(doc);
                 word.ScreenUpdating = screenUpdating;
                 if (undo != null)
@@ -96,16 +117,59 @@ namespace UnicodeToNudi
 
             if (result.Converted > 0)
             {
-                try
-                {
-                    word.StatusBar = "Unicode to Nudi: converted " + result.Converted + " Kannada word(s)";
-                }
-                catch (Exception)
-                {
-                    // ignore
-                }
+                ShowStatus(word, "Unicode to Nudi: converted " + result.Converted + " Kannada word(s)");
             }
             return result;
+        }
+
+        /// <summary>
+        /// Fast path: one Word "Replace All" per distinct Kannada word, which also
+        /// applies the Nudi font and turns off spell-check for the new text. Word
+        /// does the work internally, instead of several round trips (each followed
+        /// by re-layout and spell-check) for every single word.
+        ///
+        /// Longest words go first, so a short word can only ever match a whole
+        /// remaining word, never part of a longer one that is still in Unicode.
+        /// </summary>
+        private static void ReplaceAllWords(dynamic word, dynamic marker, string text, string nudiFont, Result result)
+        {
+            var counts = new Dictionary<string, int>();
+            foreach (string run in KannadaRuns(text))
+            {
+                counts.TryGetValue(run, out int count);
+                counts[run] = count + 1;
+            }
+            var words = new List<string>(counts.Keys);
+            words.Sort((a, b) => b.Length.CompareTo(a.Length));
+
+            for (int k = 0; k < words.Count; k++)
+            {
+                string run = words[k];
+                string nudi = NudiConverter.Convert(run);
+                if (run.Length > MaxFindLength || nudi.Length > MaxFindLength)
+                {
+                    continue; // left for the word-by-word pass
+                }
+
+                dynamic range = marker.Range;
+                dynamic find = range.Find;
+                PrepareFind(find, run);
+                dynamic replacement = find.Replacement;
+                replacement.ClearFormatting();
+                replacement.Text = nudi;
+                SetNudiFont(replacement.Font, nudiFont);
+                replacement.NoProofing = true;
+                find.Format = true;
+                if ((bool)find.Execute(Replace: WdReplaceAll))
+                {
+                    result.Converted += counts[run];
+                }
+
+                if (k % 25 == 0)
+                {
+                    ShowStatus(word, "Unicode to Nudi: converting... " + (k * 100 / words.Count) + "%");
+                }
+            }
         }
 
         /// <summary>
@@ -170,25 +234,7 @@ namespace UnicodeToNudi
             }
             dynamic range = doc.Range(from, to);
             dynamic find = range.Find;
-            find.ClearFormatting();
-            find.Text = run;
-            find.MatchWildcards = false;
-            find.MatchCase = true;
-            find.MatchWholeWord = false;
-            find.MatchSoundsLike = false;
-            find.MatchAllWordForms = false;
-            try
-            {
-                // Don't let Word ignore vowel signs while matching
-                find.MatchDiacritics = true;
-            }
-            catch (Exception)
-            {
-                // Property missing in some Word versions
-            }
-            find.Forward = true;
-            find.Wrap = WdFindStop;
-            find.Format = false;
+            PrepareFind(find, run);
             if (!(bool)find.Execute())
             {
                 return -1;
@@ -210,10 +256,8 @@ namespace UnicodeToNudi
             string nudi = NudiConverter.Convert(unicode);
             range.Text = nudi;
             dynamic converted = doc.Range(start, start + nudi.Length);
-            // Nudi text is plain Latin-1, so set the Latin ("ASCII"/"Other") fonts
-            converted.Font.Name = nudiFont;
-            converted.Font.NameAscii = nudiFont;
-            converted.Font.NameOther = nudiFont;
+            SetNudiFont(converted.Font, nudiFont);
+            converted.NoProofing = true;
             return nudi.Length;
         }
 
@@ -226,10 +270,91 @@ namespace UnicodeToNudi
                 find.ClearFormatting();
                 find.Text = "";
                 find.MatchWildcards = false;
+                find.Format = false;
+                find.Replacement.ClearFormatting();
+                find.Replacement.Text = "";
             }
             catch (Exception)
             {
                 // ignore
+            }
+        }
+
+        /// <summary>Plain, exact, case- and mark-sensitive search for <paramref name="text"/>.</summary>
+        private static void PrepareFind(dynamic find, string text)
+        {
+            find.ClearFormatting();
+            find.Text = text;
+            find.MatchWildcards = false;
+            find.MatchCase = true;
+            find.MatchWholeWord = false;
+            find.MatchSoundsLike = false;
+            find.MatchAllWordForms = false;
+            try
+            {
+                // Don't let Word ignore vowel signs or ZWJ/ZWNJ while matching
+                find.MatchDiacritics = true;
+                find.MatchControl = true;
+            }
+            catch (Exception)
+            {
+                // Properties missing in some Word versions
+            }
+            find.Forward = true;
+            find.Wrap = WdFindStop;
+            find.Format = false;
+        }
+
+        /// <summary>
+        /// Sets the Nudi font in every font slot. Word draws some Latin-1 characters
+        /// with the East Asian font (e.g. "¹" = ಸಿ and "²" = ಶಿ, which otherwise show
+        /// up as superscript 1 and 2), so setting only the Latin font is not enough.
+        /// </summary>
+        private static void SetNudiFont(dynamic font, string nudiFont)
+        {
+            font.Name = nudiFont;
+            font.NameAscii = nudiFont;
+            font.NameOther = nudiFont;
+            try
+            {
+                font.NameFarEast = nudiFont;
+                font.NameBi = nudiFont;
+            }
+            catch (Exception)
+            {
+                // ignore
+            }
+        }
+
+        private static void ShowStatus(dynamic word, string text)
+        {
+            try
+            {
+                word.StatusBar = text;
+            }
+            catch (Exception)
+            {
+                // ignore
+            }
+        }
+
+        /// <summary>Maximal runs of Kannada characters in <paramref name="text"/>.</summary>
+        private static IEnumerable<string> KannadaRuns(string text)
+        {
+            int i = 0;
+            while (i < text.Length)
+            {
+                if (!IsRunChar(text[i]))
+                {
+                    i++;
+                    continue;
+                }
+                int start = i;
+                while (i < text.Length && IsRunChar(text[i]))
+                {
+                    i++;
+                }
+                yield return text.Substring(start, i - start);
             }
         }
 
