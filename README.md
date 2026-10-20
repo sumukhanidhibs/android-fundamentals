@@ -15,6 +15,8 @@ A collection of Android Studio projects covering core Android development concep
 | [StudenInfo](./StudenInfo) | Android Context types (Application/Activity/Fragment/View) | Java |
 | [StudentCommunicationApp](./StudentCommunicationApp) | Explicit & Implicit Intents, BroadcastReceivers | Java |
 | [StudentManager](./StudentManager) | AndroidManifest declarations, Permissions, Metadata | Java |
+| [UnicodeToNudi](./UnicodeToNudi) | Kannada Unicode → Nudi converter: clipboard, Share & text-selection intents | Java |
+| [UnicodeToNudi-Windows](./UnicodeToNudi-Windows) | Windows companion: tray app with a shortcut that converts Kannada in Word | C# |
 
 ---
 
@@ -30,6 +32,7 @@ These projects follow a natural progression of Android fundamentals:
 5. StudentManager           ← The Manifest: declaring all components to the OS
 6. ServiceDemo              ← Background work with Services
 7. MyApplication            ← Modern Android with Kotlin + Jetpack Compose
+8. UnicodeToNudi            ← A real utility app: intents, clipboard, unit-tested logic
 ```
 
 ---

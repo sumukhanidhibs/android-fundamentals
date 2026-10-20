@@ -1,0 +1,19 @@
+<resources>
+    <string name="app_name">Unicode to Nudi</string>
+    <string name="process_text_label">Copy as Nudi</string>
+    <string name="label_unicode">Kannada Unicode</string>
+    <string name="hint_unicode">ಇಲ್ಲಿ ಕನ್ನಡ ಯೂನಿಕೋಡ್ ಪಠ್ಯವನ್ನು ಟೈಪ್ ಮಾಡಿ ಅಥವಾ ಅಂಟಿಸಿ</string>
+    <string name="label_nudi">Nudi (ASCII)</string>
+    <string name="hint_nudi">Nudi text appears here as you type</string>
+    <string name="action_paste">Paste</string>
+    <string name="action_clear">Clear</string>
+    <string name="action_copy">Copy Nudi</string>
+    <string name="action_share">Share</string>
+    <string name="auto_copy">Copy Nudi to clipboard automatically</string>
+    <string name="tip">Tip: in any app, select Kannada text and choose \"Copy as Nudi\" from the selection menu. Paste the result where the Nudi font is selected (e.g. Nudi 01 e).</string>
+    <string name="copied">Nudi text copied</string>
+    <string name="nothing_to_copy">Nothing to copy</string>
+    <string name="clipboard_empty">Clipboard has no text</string>
+    <string name="no_kannada">No Kannada text found</string>
+    <string name="share_title">Share Nudi text</string>
+</resources>
