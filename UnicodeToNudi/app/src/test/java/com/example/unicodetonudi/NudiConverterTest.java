@@ -63,6 +63,12 @@ public class NudiConverterTest {
     }
 
     @Test
+    public void conjunctEndingInHalant() {
+        check("ಆಗಸ್ಟ್", "DUÀ¸ïÖ");
+        check("ಲಾಸ್ಟ್", "¯Á¸ïÖ");
+    }
+
+    @Test
     public void keepsSpacesPunctuationAndDigits() {
         check("ನಮಸ್ಕಾರ, ಕನ್ನಡ!", "£ÀªÀÄ¸ÁÌgÀ, PÀ£ÀßqÀ!");
         check("೧೨೩", "123");

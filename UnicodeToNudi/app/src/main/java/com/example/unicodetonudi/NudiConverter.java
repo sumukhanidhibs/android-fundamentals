@@ -239,12 +239,8 @@ public final class NudiConverter {
                 out.append(base.inherent);
                 break;
             case HALANT:
-                if (cluster.size() > 1) {
-                    out.append(base.inherent);
-                    trailing = NUDI_HALANT;
-                } else {
-                    out.append(base.stem).append(NUDI_HALANT);
-                }
+                // ಸ್ಟ್ = ಸ್ glyph + ಟ ottu ("¸ïÖ")
+                out.append(base.stem).append(NUDI_HALANT);
                 break;
             case SIGN_AA:
                 out.append(base.stem).append('Á');
