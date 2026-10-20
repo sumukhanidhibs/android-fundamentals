@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
+using System.Text;
 
 namespace UnicodeToNudi
 {
@@ -19,7 +20,7 @@ namespace UnicodeToNudi
         private const int WdNoProofing = 1024;
 
         // Nudi characters that Word may draw with a non-Latin font slot: ¹ = ಸಿ, ² = ಶಿ
-        private static readonly string[] FontSensitiveChars = { "\u00B9", "\u00B2" };
+        private static readonly char[] FontSensitiveChars = { '\u00B9', '\u00B2' };
 
         // Word's Find has a 255-character limit on the search text
         private const int MaxFindLength = 255;
@@ -74,6 +75,11 @@ namespace UnicodeToNudi
 
             bool screenUpdating = word.ScreenUpdating;
             word.ScreenUpdating = false;
+            // Replace All applies AutoFormat "smart quotes" to the text it inserts,
+            // which turns « (ವಿ) and » (ಹಿ) into “ and ”. Switch it off meanwhile.
+            dynamic options = word.Options;
+            bool smartQuotes = options.AutoFormatAsYouTypeReplaceQuotes;
+            options.AutoFormatAsYouTypeReplaceQuotes = false;
             // A bookmark keeps track of the selection while its text changes length
             dynamic marker = doc.Bookmarks.Add(MarkerName, doc.Range(selStart, selEnd));
             try
@@ -92,7 +98,7 @@ namespace UnicodeToNudi
                         ConvertRuns(doc, selStart, selEnd, rest, nudiFont, result);
                     }
 
-                    FixFontSensitiveChars(doc, marker, nudiFont);
+                    VerifyAndRepair(doc, marker, text, nudiFont);
                     progress?.Invoke(100);
                 }
 
@@ -109,6 +115,7 @@ namespace UnicodeToNudi
                     // ignore
                 }
                 ResetFind(doc);
+                options.AutoFormatAsYouTypeReplaceQuotes = smartQuotes;
                 word.ScreenUpdating = screenUpdating;
                 if (undo != null)
                 {
@@ -307,6 +314,77 @@ namespace UnicodeToNudi
         }
 
         /// <summary>
+        /// Checks the converted text against what it should be and fixes it.
+        ///
+        /// The expected text is the original selection with each Kannada word
+        /// converted. When Word's text lines up position for position with the
+        /// document (no hidden field codes etc.), any character Word changed on its
+        /// own (e.g. AutoFormat) is put back, and every ¹ (ಸಿ) / ² (ಶಿ) the
+        /// conversion produced gets the Nudi font set directly in all font slots.
+        /// Otherwise the ¹/² font fix falls back to searching for them.
+        /// </summary>
+        private static void VerifyAndRepair(dynamic doc, dynamic marker, string original, string nudiFont)
+        {
+            var expected = new StringBuilder(original.Length * 2);
+            var converted = new List<bool>(original.Length * 2);
+            int i = 0;
+            while (i < original.Length)
+            {
+                if (!IsRunChar(original[i]))
+                {
+                    expected.Append(original[i]);
+                    converted.Add(false);
+                    i++;
+                    continue;
+                }
+                int start = i;
+                while (i < original.Length && IsRunChar(original[i]))
+                {
+                    i++;
+                }
+                string nudi = NudiConverter.Convert(original.Substring(start, i - start));
+                expected.Append(nudi);
+                for (int k = 0; k < nudi.Length; k++)
+                {
+                    converted.Add(true);
+                }
+            }
+
+            dynamic range = marker.Range;
+            int rangeStart = range.Start;
+            int rangeEnd = range.End;
+            string actual = range.Text;
+            if (actual.Length != expected.Length || rangeEnd - rangeStart != actual.Length)
+            {
+                FixFontSensitiveChars(doc, marker, nudiFont);
+                return;
+            }
+
+            for (int k = 0; k < actual.Length; k++)
+            {
+                if (!converted[k])
+                {
+                    continue;
+                }
+                char want = expected[k];
+                bool wrongChar = actual[k] != want;
+                bool fontSensitive = Array.IndexOf(FontSensitiveChars, want) >= 0;
+                if (!wrongChar && !fontSensitive)
+                {
+                    continue;
+                }
+                dynamic one = doc.Range(rangeStart + k, rangeStart + k + 1);
+                if (wrongChar)
+                {
+                    one.Text = want.ToString();
+                    one = doc.Range(rangeStart + k, rangeStart + k + 1);
+                    one.NoProofing = true;
+                }
+                SetNudiFont(one.Font, nudiFont);
+            }
+        }
+
+        /// <summary>
         /// Sets the Nudi font directly on every ¹ (ಸಿ) and ² (ಶಿ) produced by the
         /// conversion. Word treats these as digits and may draw them with the complex
         /// script or East Asian font slot, where they appear as superscript 1 and 2.
@@ -315,8 +393,9 @@ namespace UnicodeToNudi
         /// </summary>
         private static void FixFontSensitiveChars(dynamic doc, dynamic marker, string nudiFont)
         {
-            foreach (string c in FontSensitiveChars)
+            foreach (char ch in FontSensitiveChars)
             {
+                string c = ch.ToString();
                 int end = marker.Range.End;
                 int from = marker.Range.Start;
                 while (from < end)
