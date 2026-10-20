@@ -2,6 +2,13 @@
 
 An Android app that converts **Kannada Unicode** text (what you get from WhatsApp, websites, Google Input Tools, Gboard, ...) into **Nudi ASCII** text, which shows correctly when pasted into documents that use the Nudi fonts (Nudi 01 e, Nudi Akshara, ...). It's useful for government and office documents that still need Nudi.
 
+## Download
+
+Get the latest APK (no GitHub sign-in needed):
+https://github.com/sumukhanidhibs/android-fundamentals/releases/latest/download/UnicodeToNudi.apk
+
+Open the link on your phone and tap the downloaded file to install. A new release is published automatically on every build.
+
 ## Three ways to convert
 
 | Way | How |
