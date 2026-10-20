@@ -16,6 +16,7 @@ A collection of Android Studio projects covering core Android development concep
 | [StudentCommunicationApp](./StudentCommunicationApp) | Explicit & Implicit Intents, BroadcastReceivers | Java |
 | [StudentManager](./StudentManager) | AndroidManifest declarations, Permissions, Metadata | Java |
 | [UnicodeToNudi](./UnicodeToNudi) | Kannada Unicode → Nudi converter: clipboard, Share & text-selection intents | Java |
+| [UnicodeToNudi-Windows](./UnicodeToNudi-Windows) | Windows companion: tray app with a shortcut that converts Kannada in Word | C# |
 
 ---
 

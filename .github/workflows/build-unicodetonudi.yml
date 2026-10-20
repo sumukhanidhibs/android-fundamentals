@@ -1,17 +1,21 @@
-name: Build UnicodeToNudi APK
+name: Build UnicodeToNudi
+
+# Builds the Android app and the Windows app, then publishes both in one
+# GitHub Release. Release assets of a public repo download without signing in:
+#   releases/latest/download/UnicodeToNudi.apk
+#   releases/latest/download/UnicodeToNudi.exe
 
 on:
   push:
     paths:
       - "UnicodeToNudi/**"
+      - "UnicodeToNudi-Windows/**"
       - ".github/workflows/build-unicodetonudi.yml"
   workflow_dispatch:
 
 jobs:
-  build:
+  android:
     runs-on: ubuntu-latest
-    permissions:
-      contents: write   # needed to publish the GitHub Release
     defaults:
       run:
         working-directory: UnicodeToNudi
@@ -44,8 +48,44 @@ jobs:
           path: UnicodeToNudi/UnicodeToNudi.apk
           if-no-files-found: error
 
-      # Release assets of a public repo download without signing in.
-      # Latest APK is always at: releases/latest/download/UnicodeToNudi.apk
+  windows:
+    runs-on: windows-latest
+    defaults:
+      run:
+        working-directory: UnicodeToNudi-Windows
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "8.0.x"
+
+      # Same test data as the Android converter, so both apps give identical Nudi text
+      - name: Run converter tests
+        run: dotnet run --project tests/NudiConverter.Tests -c Release
+
+      - name: Build Windows app
+        run: dotnet build src/UnicodeToNudi/UnicodeToNudi.csproj -c Release -o publish
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: UnicodeToNudi-exe
+          path: UnicodeToNudi-Windows/publish/UnicodeToNudi.exe
+          if-no-files-found: error
+
+  release:
+    needs: [android, windows]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write   # needed to publish the GitHub Release
+
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          path: dist
+          merge-multiple: true
+
       - name: Publish GitHub Release
         uses: softprops/action-gh-release@v2
         with:
@@ -53,11 +93,17 @@ jobs:
           name: Unicode to Nudi (build ${{ github.run_number }})
           target_commitish: ${{ github.sha }}
           make_latest: true
-          files: UnicodeToNudi/UnicodeToNudi.apk
+          files: |
+            dist/UnicodeToNudi.apk
+            dist/UnicodeToNudi.exe
           body: |
-            Android app that converts Kannada Unicode text to Nudi.
+            Converts Kannada Unicode text to Nudi.
 
-            Install: download **UnicodeToNudi.apk** below on your phone and tap it.
-            Android may ask you to allow installing apps from your browser.
+            **Android:** download **UnicodeToNudi.apk** on your phone and tap it to install.
+
+            **Windows:** download **UnicodeToNudi.exe** and run it. It runs in the background
+            (icon near the clock). Select Kannada text in Microsoft Word and press **Ctrl+Alt+N**.
+            Windows may show "Windows protected your PC" because the app is not signed:
+            click **More info** → **Run anyway**.
 
             Built from ${{ github.ref_name }} @ ${{ github.sha }}.
