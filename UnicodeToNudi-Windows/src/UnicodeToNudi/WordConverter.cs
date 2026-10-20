@@ -13,12 +13,10 @@ namespace UnicodeToNudi
     /// </summary>
     internal static class WordConverter
     {
-        private const int WdCollapseEnd = 0;
         private const int WdFindStop = 0;
 
-        // One run of Kannada letters (plus ZWJ/ZWNJ, which belong inside Kannada words).
-        // Word wildcards accept Unicode character ranges.
-        private const string KannadaRunPattern = "[ಀ-೿‌‍]@";
+        // Word's Find has a 255-character limit on the search text
+        private const int MaxFindLength = 255;
 
         internal sealed class Result
         {
@@ -71,24 +69,10 @@ namespace UnicodeToNudi
             word.ScreenUpdating = false;
             try
             {
-                try
+                string text = doc.Range(selStart, selEnd).Text;
+                if (NudiConverter.ContainsKannada(text))
                 {
-                    selEnd = ConvertWithFind(doc, selStart, selEnd, nudiFont, result);
-                }
-                catch (COMException)
-                {
-                    // Wildcard search not supported here; fall back to text offsets
-                    result.Converted = 0;
-                }
-
-                if (result.Converted == 0)
-                {
-                    dynamic range = doc.Range(selStart, selEnd);
-                    string text = range.Text;
-                    if (NudiConverter.ContainsKannada(text))
-                    {
-                        selEnd = ConvertByOffsets(doc, selStart, selEnd, text, nudiFont, result);
-                    }
+                    selEnd = ConvertRuns(doc, selStart, selEnd, text, nudiFont, result);
                 }
 
                 doc.Range(selStart, selEnd).Select();
@@ -124,92 +108,98 @@ namespace UnicodeToNudi
             return result;
         }
 
-        /// <summary>Finds each Kannada run with Word's wildcard search and replaces it.</summary>
-        private static int ConvertWithFind(dynamic doc, int selStart, int selEnd, string nudiFont, Result result)
+        /// <summary>
+        /// Replaces each Kannada word (maximal run of Kannada characters) in the
+        /// selection, left to right.
+        ///
+        /// The run's document position is normally its offset in the selection's
+        /// text. Fields, tables and other objects can shift that, so if the text at
+        /// the expected position doesn't match, the run is located with a plain
+        /// (non-wildcard) search from the current position instead. A run that
+        /// can't be located exactly is skipped, never guessed.
+        ///
+        /// Word's wildcard search is not used: it treats a letter plus its vowel
+        /// sign (ಸಾ) as one character, so a pattern like [ಀ-೿]@ only matches bare
+        /// letters and words come out half converted.
+        /// </summary>
+        private static int ConvertRuns(dynamic doc, int selStart, int selEnd, string text, string nudiFont, Result result)
         {
-            dynamic range = doc.Range(selStart, selEnd);
-            while (true)
+            int shift = 0;       // document position minus text offset, adjusted as we go
+            int cursor = selStart;
+            int i = 0;
+            while (i < text.Length)
             {
-                dynamic find = range.Find;
-                find.ClearFormatting();
-                find.Text = KannadaRunPattern;
-                find.MatchWildcards = true;
-                find.Forward = true;
-                find.Wrap = WdFindStop;
-                find.Format = false;
-                if (!(bool)find.Execute())
+                if (!IsRunChar(text[i]))
                 {
-                    break;
+                    i++;
+                    continue;
+                }
+                int runStart = i;
+                while (i < text.Length && IsRunChar(text[i]))
+                {
+                    i++;
+                }
+                string run = text.Substring(runStart, i - runStart);
+
+                int start = selStart + runStart + shift;
+                if (start < cursor || start + run.Length > selEnd || doc.Range(start, start + run.Length).Text != run)
+                {
+                    start = Locate(doc, run, cursor, selEnd);
+                    if (start < 0)
+                    {
+                        result.Skipped++;
+                        continue;
+                    }
                 }
 
-                int start = range.Start;
-                int end = range.End;
-                if (start >= selEnd)
-                {
-                    break;
-                }
-                if (end > selEnd)
-                {
-                    // Run continues past the selection: convert only the selected part
-                    end = selEnd;
-                }
-
-                int newLength = Replace(doc, start, end, nudiFont);
+                int newLength = Replace(doc, start, start + run.Length, nudiFont);
                 result.Converted++;
-                selEnd += newLength - (end - start);
-
-                range = doc.Range(start + newLength, selEnd);
-                if (range.Start >= selEnd)
-                {
-                    break;
-                }
+                selEnd += newLength - run.Length;
+                cursor = start + newLength;
+                shift = cursor - (selStart + i);
             }
             return selEnd;
         }
 
-        /// <summary>
-        /// Fallback: locate Kannada runs in the selection's text and map them to
-        /// document positions. Runs whose position can't be confirmed (e.g. next to
-        /// fields or table markers) are skipped rather than risk changing other text.
-        /// </summary>
-        private static int ConvertByOffsets(dynamic doc, int selStart, int selEnd, string text, string nudiFont, Result result)
+        /// <summary>Finds the exact text of <paramref name="run"/> in [from, to); returns its start or -1.</summary>
+        private static int Locate(dynamic doc, string run, int from, int to)
         {
-            var runs = new List<KeyValuePair<int, int>>();
-            int i = 0;
-            while (i < text.Length)
+            if (run.Length > MaxFindLength || from >= to)
             {
-                if (IsRunChar(text[i]))
-                {
-                    int start = i;
-                    while (i < text.Length && IsRunChar(text[i]))
-                    {
-                        i++;
-                    }
-                    runs.Add(new KeyValuePair<int, int>(start, i - start));
-                }
-                else
-                {
-                    i++;
-                }
+                return -1;
             }
-
-            // Work backwards so earlier positions stay valid
-            for (int k = runs.Count - 1; k >= 0; k--)
+            dynamic range = doc.Range(from, to);
+            dynamic find = range.Find;
+            find.ClearFormatting();
+            find.Text = run;
+            find.MatchWildcards = false;
+            find.MatchCase = true;
+            find.MatchWholeWord = false;
+            find.MatchSoundsLike = false;
+            find.MatchAllWordForms = false;
+            try
             {
-                int start = selStart + runs[k].Key;
-                int end = start + runs[k].Value;
-                string expected = text.Substring(runs[k].Key, runs[k].Value);
-                string actual = doc.Range(start, end).Text;
-                if (actual != expected)
-                {
-                    result.Skipped++;
-                    continue;
-                }
-                int newLength = Replace(doc, start, end, nudiFont);
-                result.Converted++;
-                selEnd += newLength - (end - start);
+                // Don't let Word ignore vowel signs while matching
+                find.MatchDiacritics = true;
             }
-            return selEnd;
+            catch (Exception)
+            {
+                // Property missing in some Word versions
+            }
+            find.Forward = true;
+            find.Wrap = WdFindStop;
+            find.Format = false;
+            if (!(bool)find.Execute())
+            {
+                return -1;
+            }
+            int start = range.Start;
+            int end = range.End;
+            if (end > to || doc.Range(start, end).Text != run)
+            {
+                return -1;
+            }
+            return start;
         }
 
         /// <summary>Replaces document text [start, end) with Nudi; returns the new length.</summary>

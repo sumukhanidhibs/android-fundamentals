@@ -44,7 +44,7 @@ Settings are saved in `%APPDATA%\UnicodeToNudi\settings.ini`.
 | File | Purpose |
 |---|---|
 | `NudiConverter.cs` | Conversion logic, a C# port of the Android app's `NudiConverter.java` |
-| `WordConverter.cs` | Talks to the running Word through COM. It finds Kannada runs in the selection with a wildcard search (`[ಀ-೿]@`), replaces each one and sets the Nudi font on it, all inside one undo step |
+| `WordConverter.cs` | Talks to the running Word through COM. It reads the selected text, finds each Kannada word, and replaces that whole word with Nudi in the Nudi font, all inside one undo step. Word's wildcard search isn't used, because it treats a letter plus its vowel sign (ಸಾ) as one character and would convert only bare letters |
 | `ClipboardConverter.cs` | Ctrl+C → convert → Ctrl+V fallback for other programs |
 | `HotkeyWindow.cs` | Global shortcut via `RegisterHotKey` |
 | `TrayApp.cs` | Tray icon, menu and notifications |
