@@ -1,0 +1,68 @@
+<resources>
+    <string name="app_name">DocLens</string>
+
+    <!-- Library -->
+    <string name="tab_recent">Recent</string>
+    <string name="tab_all">All PDFs</string>
+    <string name="tab_folders">Folders</string>
+    <string name="action_search">Search</string>
+    <string name="search_hint">Search PDFs</string>
+    <string name="action_sort">Sort</string>
+    <string name="sort_name">Name</string>
+    <string name="sort_date">Date modified</string>
+    <string name="sort_size">Size</string>
+    <string name="action_refresh">Refresh</string>
+    <string name="action_open_file">Open file</string>
+    <string name="action_open">Open</string>
+    <string name="action_share">Share</string>
+    <string name="action_remove_recent">Remove from recent</string>
+    <string name="back">Back</string>
+    <string name="more_options">More options</string>
+
+    <plurals name="pdf_count">
+        <item quantity="one">%d PDF</item>
+        <item quantity="other">%d PDFs</item>
+    </plurals>
+    <string name="summary_count">%1$s on this device</string>
+    <string name="last_page">Page %1$d of %2$d</string>
+
+    <string name="permission_title">Show the PDFs on your phone</string>
+    <string name="permission_message">DocLens needs access to your files to find every PDF on this device and list them by folder. Nothing leaves your phone.</string>
+    <string name="permission_button">Allow access</string>
+    <string name="permission_denied">Without file access DocLens can still open PDFs from other apps or with “Open file”.</string>
+
+    <string name="empty_recent_title">No recent files</string>
+    <string name="empty_recent_message">PDFs you open appear here so you can jump back in.</string>
+    <string name="empty_all_title">No PDFs found</string>
+    <string name="empty_all_message">There are no PDF files on this device yet.</string>
+    <string name="empty_search_title">No matches</string>
+    <string name="empty_search_message">No PDF names match “%s”.</string>
+    <string name="browse_all">Browse all PDFs</string>
+
+    <string name="default_title">Make DocLens your PDF viewer</string>
+    <string name="default_message">Open every PDF in DocLens: from WhatsApp, Gmail, Downloads and your file manager.</string>
+    <string name="default_button">Set as default</string>
+    <string name="default_dismiss">Not now</string>
+    <string name="default_pick_always">Choose DocLens, then tap “Always”</string>
+    <string name="default_clear_other">%s opens PDFs right now. Tap “Open by default” → “Clear defaults”, then open any PDF and choose DocLens → Always.</string>
+    <string name="default_done">DocLens is your default PDF viewer</string>
+    <string name="welcome_pdf_title">DocLens is ready</string>
+    <string name="welcome_pdf_body">From now on, PDFs open here.</string>
+
+    <!-- Viewer -->
+    <string name="page_indicator">%1$d / %2$d</string>
+    <string name="action_go_to_page">Go to page</string>
+    <string name="action_night_mode">Night mode</string>
+    <string name="action_fit_width">Fit to width</string>
+    <string name="go_to_page_hint">Page (1–%d)</string>
+    <string name="go">Go</string>
+    <string name="cancel">Cancel</string>
+    <string name="error_open">Couldn’t open this PDF</string>
+    <string name="error_password">This PDF is password protected. DocLens can’t open protected files yet.</string>
+    <string name="error_damaged">This file is damaged or isn’t a PDF.</string>
+    <string name="error_missing">This file was moved or deleted.</string>
+    <string name="error_no_file">No PDF to show</string>
+    <string name="close">Close</string>
+    <string name="share_via">Share PDF</string>
+    <string name="no_app_found">No app can handle this</string>
+</resources>

@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Dark palette: the navy of the icon as the base surface -->
+    <color name="primary">#FFFFB4AB</color>
+    <color name="on_primary">#FF690005</color>
+    <color name="primary_container">#FF93000A</color>
+    <color name="on_primary_container">#FFFFDAD6</color>
+    <color name="secondary">#FFBAC6EA</color>
+    <color name="on_secondary">#FF243050</color>
+    <color name="secondary_container">#FF2B3756</color>
+    <color name="on_secondary_container">#FFDDE2F5</color>
+    <color name="surface">#FF0E1424</color>
+    <color name="on_surface">#FFE3E6F0</color>
+    <color name="surface_variant">#FF2A3248</color>
+    <color name="on_surface_variant">#FFAEB5C8</color>
+    <color name="outline">#FF7A8296</color>
+    <color name="outline_variant">#FF2E364C</color>
+    <color name="surface_container_lowest">#FF0A0F1C</color>
+    <color name="surface_container_low">#FF151C2F</color>
+    <color name="surface_container">#FF192136</color>
+    <color name="surface_container_high">#FF20283E</color>
+    <color name="surface_container_highest">#FF2A3248</color>
+</resources>

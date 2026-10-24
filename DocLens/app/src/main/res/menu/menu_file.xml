@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item
+        android:id="@+id/file_open"
+        android:title="@string/action_open" />
+    <item
+        android:id="@+id/file_share"
+        android:title="@string/action_share" />
+    <item
+        android:id="@+id/file_remove_recent"
+        android:title="@string/action_remove_recent" />
+</menu>
